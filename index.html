@@ -1,45 +1,591 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Nutrient Deficiency Detector</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"/>
+<title>NutriDetect — Nutrient Deficiency Detection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --teal: #0891b2;
+  --teal-light: #06b6d4;
+  --teal-dark: #0e7490;
+  --navy: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --bg2: #f1f5f9;
+  --white: #ffffff;
+  --border: #e2e8f0;
+  --red: #ef4444;
+  --orange: #f97316;
+  --green: #22c55e;
+  --green-text: #16a34a;
+  --radius: 16px;
+  --font: 'Inter', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--font); color: var(--navy); background: var(--white); font-size: 16px; line-height: 1.6; }
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px; height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.nav-logo-text { font-size: 18px; font-weight: 700; color: var(--navy); }
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { text-decoration: none; font-size: 15px; font-weight: 500; color: var(--text-muted); transition: color 0.2s; }
+.nav-links a:hover { color: var(--navy); }
+
+/* HERO */
+#home {
+  min-height: calc(100vh - 64px);
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 40%, #ccfbf1 70%, #e0f2fe 100%);
+  display: flex; align-items: center; padding: 80px;  gap: 60px;
+}
+.hero-left { flex: 1; max-width: 560px; }
+.hero-right { flex: 0 0 380px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.25);
+  border-radius: 99px; padding: 6px 16px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--teal-dark); text-transform: uppercase; margin-bottom: 28px;
+}
+.hero-title {
+  font-size: clamp(40px, 5vw, 58px); font-weight: 800; line-height: 1.1;
+  color: var(--navy); margin-bottom: 24px; letter-spacing: -0.02em;
+}
+.hero-title .teal { color: var(--teal-light); }
+.hero-desc { font-size: 17px; color: var(--text-muted); line-height: 1.7; margin-bottom: 40px; max-width: 480px; }
+.hero-btns { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 56px; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--teal); color: white; font-family: var(--font);
+  font-size: 15px; font-weight: 600; padding: 14px 28px;
+  border-radius: 99px; border: none; cursor: pointer; text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); }
+
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--navy); font-family: var(--font);
+  font-size: 15px; font-weight: 600; padding: 14px 28px;
+  border-radius: 99px; border: 2px solid var(--navy); cursor: pointer; text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-outline:hover { background: var(--navy); color: white; }
+
+.hero-stats { display: flex; gap: 48px; }
+.stat-value { font-size: 28px; font-weight: 800; color: var(--teal); line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 13px; color: var(--text-muted); }
+
+/* Preview card */
+.preview-card { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); padding: 28px; }
+.preview-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.preview-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-radius: 10px; margin-bottom: 10px;
+  font-size: 15px; font-weight: 600; color: var(--navy);
+}
+.preview-row.high { background: #fef2f2; }
+.preview-row.mod  { background: #fff7ed; }
+.preview-row.low  { background: #f0fdf4; }
+.severity-badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 99px; border: 1.5px solid; }
+.sev-high { color: var(--red);       border-color: var(--red);   background: #fef2f2; }
+.sev-mod  { color: var(--orange);    border-color: var(--orange); background: #fff7ed; }
+.sev-low  { color: var(--green-text); border-color: var(--green); background: #f0fdf4; }
+.preview-note { font-size: 13px; color: var(--text-light); text-align: center; margin-top: 16px; }
+
+/* SECTIONS */
+section { padding: 96px 80px; }
+section.alt { background: var(--bg2); }
+.section-header { text-align: center; }
+.section-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 99px; padding: 5px 14px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--teal-dark); text-transform: uppercase; margin-bottom: 20px;
+}
+.section-title { font-size: clamp(28px, 4vw, 42px); font-weight: 800; color: var(--navy); letter-spacing: -0.02em; margin-bottom: 14px; }
+.section-sub { font-size: 17px; color: var(--text-muted); max-width: 560px; margin: 0 auto 56px; }
+
+/* ANALYZE */
+#analyze { background: white; }
+.analyze-inner { max-width: 760px; margin: 0 auto; }
+.upload-card { background: white; border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); padding: 32px; }
+
+.drop-zone {
+  border: 2px dashed #cbd5e1; border-radius: 14px; background: #f8fafc;
+  padding: 60px 32px; text-align: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s; position: relative;
+}
+.drop-zone:hover, .drop-zone.drag-over { border-color: var(--teal-light); background: #f0fdfe; }
+.drop-zone.has-file { border-color: var(--teal); background: #f0fdfe; }
+.drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.drop-icon { font-size: 52px; margin-bottom: 16px; }
+.drop-title { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.drop-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+.file-type-badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.file-badge { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
+.file-selected {
+  display: none; align-items: center; gap: 10px;
+  background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 10px; padding: 12px 16px; margin-top: 16px;
+  font-size: 14px; font-weight: 600; color: var(--teal-dark);
+}
+.file-selected.show { display: flex; }
+
+.text-or-divider {
+  display: flex; align-items: center; gap: 12px; margin: 20px 0;
+  color: var(--text-light); font-size: 13px; font-weight: 600;
+}
+.text-or-divider::before, .text-or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.text-label { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+
+textarea {
+  width: 100%; min-height: 120px; border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 14px 16px; font-family: var(--font); font-size: 14px; color: var(--navy);
+  background: white; resize: vertical; outline: none; transition: border-color 0.2s;
+}
+textarea:focus { border-color: var(--teal-light); }
+textarea::placeholder { color: var(--text-light); }
+
+.analyze-footer { display: flex; justify-content: flex-end; margin-top: 20px; }
+
+.btn-analyze {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--teal-light), var(--teal));
+  color: white; font-family: var(--font); font-size: 16px; font-weight: 600;
+  padding: 16px 36px; border-radius: 99px; border: none; cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 20px rgba(8,145,178,0.35);
+}
+.btn-analyze:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.spin { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-box { display: none; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: var(--red); margin-top: 16px; align-items: center; gap: 10px; }
+.error-box.show { display: flex; }
+
+/* RESULTS */
+#results-section { display: none; margin-top: 32px; }
+#results-section.show { display: block; }
+.results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.results-title { font-size: 18px; font-weight: 700; color: var(--navy); }
+.btn-clear { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-family: var(--font); font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+.btn-clear:hover { border-color: var(--text-muted); color: var(--navy); }
+.results-list { display: flex; flex-direction: column; gap: 10px; }
+
+.result-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-radius: 12px;
+  font-size: 15px; font-weight: 600; color: var(--navy);
+  animation: fadeUp 0.35s ease both;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.result-row.detected-high { background: #fef2f2; }
+.result-row.detected-mod  { background: #fff7ed; }
+.result-row.detected-low  { background: #f0fdf4; }
+.result-row.not-detected  { background: #f8fafc; border: 1px solid var(--border); }
+
+/* HOW IT WORKS */
+#how-it-works { background: white; }
+.steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; max-width: 1100px; margin: 0 auto; }
+.step-card {
+  background: white; border: 1px solid var(--border); border-radius: 20px;
+  padding: 36px 28px 32px; text-align: center; position: relative; overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.step-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.step-num { position: absolute; top: 20px; right: 24px; font-size: 52px; font-weight: 900; color: rgba(6,182,212,0.1); line-height: 1; }
+.step-icon-wrap { width: 56px; height: 56px; border-radius: 14px; background: #f0fdfe; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 20px; }
+.step-card:nth-child(2) .step-icon-wrap { background: #fdf4ff; }
+.step-card:nth-child(3) .step-icon-wrap { background: #f5f3ff; }
+.step-title { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 12px; }
+.step-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+.step-bar { height: 3px; border-radius: 99px; margin-top: 28px; }
+.step-card:nth-child(1) .step-bar { background: linear-gradient(90deg,#06b6d4,#0891b2); }
+.step-card:nth-child(2) .step-bar { background: linear-gradient(90deg,#a855f7,#06b6d4); }
+.step-card:nth-child(3) .step-bar { background: linear-gradient(90deg,#8b5cf6,#6366f1); }
+
+/* DEFICIENCIES */
+#coverage { background: var(--bg2); }
+.deficiencies-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; max-width: 1100px; margin: 0 auto; }
+.def-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 32px 20px 24px; text-align: center; transition: box-shadow 0.2s, transform 0.2s; }
+.def-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.def-icon { font-size: 44px; margin-bottom: 14px; }
+.def-name { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 12px; }
+.def-badges { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.def-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; border: 1.5px solid; }
+.def-badge.high { color: var(--red);       border-color: var(--red);   background: #fef2f2; }
+.def-badge.mod  { color: var(--orange);    border-color: var(--orange); background: #fff7ed; }
+.def-badge.low  { color: var(--green-text); border-color: var(--green); background: #f0fdf4; }
+
+/* FOOTER */
+footer { background: var(--navy); color: #94a3b8; padding: 64px 80px 32px; }
+.footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 32px; }
+.footer-brand .nav-logo-text { color: white; }
+.footer-brand p { font-size: 14px; line-height: 1.7; margin-top: 14px; max-width: 300px; }
+.footer-col-title { font-size: 15px; font-weight: 700; color: white; margin-bottom: 20px; }
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.footer-links a { text-decoration: none; font-size: 14px; color: #94a3b8; transition: color 0.2s; }
+.footer-links a:hover { color: white; }
+.footer-bottom { font-size: 13px; color: #64748b; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  #home { flex-direction: column; padding: 60px 24px; }
+  .hero-right { flex: none; width: 100%; }
+  section { padding: 64px 24px; }
+  nav { padding: 0 24px; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .deficiencies-grid { grid-template-columns: repeat(2,1fr); }
+  .footer-top { grid-template-columns: 1fr; }
+  .hero-stats { gap: 28px; }
+}
+</style>
 </head>
 <body>
 
-  <h2>Nutrient Deficiency Detection</h2>
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#home">
+    <div class="nav-logo-icon">🧬</div>
+    <span class="nav-logo-text">NutriDetect</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#home">Home</a></li>
+    <li><a href="#analyze">Analyze</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
+  </ul>
+</nav>
 
-  <input type="text" id="inputText" placeholder="Enter symptoms" style="width:300px;">
-  <button onclick="predict()">Predict</button>
+<!-- HERO -->
+<section id="home" style="padding-top:80px;padding-bottom:80px;">
+  <div class="hero-left">
+    <div class="badge">🧬 AI-POWERED HEALTHCARE</div>
+    <h1 class="hero-title">
+      Detect Nutrient<br>
+      <span class="teal">Deficiencies Using<br>AI</span>
+    </h1>
+    <p class="hero-desc">
+      Upload your clinical notes, lab summaries, or symptom descriptions.
+      Our advanced NLP model instantly analyzes the text to identify potential
+      nutrient deficiencies and their severity.
+    </p>
+    <div class="hero-btns">
+      <a href="#analyze" class="btn-primary">📁 Upload &amp; Analyze</a>
+      <a href="#how-it-works" class="btn-outline">▶ How It Works</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-value">10</div>
+        <div class="stat-label">Deficiencies Tracked</div>
+      </div>
+      <div>
+        <div class="stat-value">NLP</div>
+        <div class="stat-label">Powered Analysis</div>
+      </div>
+      <div>
+        <div class="stat-value">Free</div>
+        <div class="stat-label">No Sign-up</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="preview-card">
+      <div class="preview-title">📊 Sample Analysis Preview</div>
+      <div class="preview-row high">
+        <span>• Iron Deficiency</span>
+        <span class="severity-badge sev-high">High</span>
+      </div>
+      <div class="preview-row mod">
+        <span>• Vitamin D Deficiency</span>
+        <span class="severity-badge sev-mod">Moderate</span>
+      </div>
+      <div class="preview-row low">
+        <span>• Folate Deficiency</span>
+        <span class="severity-badge sev-low">Low</span>
+      </div>
+      <div class="preview-note">Preview — upload your own file to get real results</div>
+    </div>
+  </div>
+</section>
 
-  <h3>Result:</h3>
-  <div id="result"></div>
+<!-- ANALYZE -->
+<section id="analyze">
+  <div class="section-header">
+    <div class="section-badge">📁 FILE ANALYSIS</div>
+    <h2 class="section-title">Analyze Your Document</h2>
+    <p class="section-sub">Upload a clinical document to detect potential nutrient deficiencies using our NLP engine.</p>
+  </div>
+  <div class="analyze-inner">
+    <div class="upload-card">
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.doc,.png,.jpg,.jpeg,.webp"/>
+        <div class="drop-icon">📤</div>
+        <div class="drop-title">Drag &amp; drop your file here</div>
+        <div class="drop-sub">or click to browse from your computer</div>
+        <div class="file-type-badges">
+          <span class="file-badge">.TXT</span>
+          <span class="file-badge">.PDF</span>
+          <span class="file-badge">.DOCX</span>
+          <span class="file-badge">.JPG / PNG</span>
+        </div>
+      </div>
+      <div class="file-selected" id="fileSelected">
+        <span>📄</span><span id="selectedFileName"></span>
+      </div>
 
-  <script>
-    async function predict() {
-      const userInput = document.getElementById("inputText").value;
+      <div class="text-or-divider">OR</div>
 
-      try {
-        const res = await fetch("https://nutrient-backend.onrender.com/predict", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ text: userInput })
-        });
+      <div class="text-label">💬 Describe symptoms or paste clinical notes</div>
+      <textarea id="textInput" placeholder="e.g. Patient presents with fatigue, pallor, brittle nails, and shortness of breath. Lab reports show low hemoglobin..."></textarea>
 
-        const data = await res.json();
+      <div class="error-box" id="errorBox">
+        <span>⚠️</span><span id="errorMsg">Something went wrong. Please try again.</span>
+      </div>
 
-        let output = "";
-        for (let key in data) {
-          output += key + " : " + data[key] + "<br>";
-        }
+      <div class="analyze-footer">
+        <button class="btn-analyze" id="analyzeBtn">
+          <div class="spin" id="spinner"></div>
+          <span id="btnText">⚡ Analyze File</span>
+        </button>
+      </div>
 
-        document.getElementById("result").innerHTML = output;
+      <div id="results-section">
+        <div class="results-header">
+          <div class="results-title">📊 Analysis Results</div>
+          <button class="btn-clear" id="clearBtn">Clear</button>
+        </div>
+        <div class="results-list" id="resultsList"></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-      } catch (error) {
-        document.getElementById("result").innerHTML = "Error connecting to backend";
-      }
+<!-- HOW IT WORKS -->
+<section id="how-it-works">
+  <div class="section-header">
+    <div class="section-badge">⚙️ PROCESS</div>
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">Three simple steps from file upload to actionable health insights</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <div class="step-icon-wrap">📁</div>
+      <div class="step-title">Upload File</div>
+      <p class="step-desc">Drag &amp; drop or browse to upload your clinical notes, lab reports, or symptom descriptions in .txt, .pdf, or .docx format.</p>
+      <div class="step-bar"></div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <div class="step-icon-wrap">🧠</div>
+      <div class="step-title">PubMedBERT based NLP Processing</div>
+      <p class="step-desc">Our NLP model uses PubMedBERT to detect nutrient deficiencies and estimate their severity levels (High, Moderate, Low).</p>
+      <div class="step-bar"></div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <div class="step-icon-wrap">📊</div>
+      <div class="step-title">Get Prediction</div>
+      <p class="step-desc">Receive a clear, color-coded report listing detected nutrient deficiencies with severity levels — High, Moderate, or Low.</p>
+      <div class="step-bar"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SUPPORTED DEFICIENCIES -->
+<section id="coverage" class="alt">
+  <div class="section-header">
+    <div class="section-badge">🔬 COVERAGE</div>
+    <h2 class="section-title">Supported Deficiencies</h2>
+    <p class="section-sub">Our NLP model is trained to detect these 7 critical nutrient deficiencies</p>
+  </div>
+  <div class="deficiencies-grid">
+    <div class="def-card"><div class="def-icon">🩸</div><div class="def-name">Iron Deficiency</div><div class="def-badges"><span class="def-badge high">High</span><span class="def-badge mod">Moderate</span><span class="def-badge low">Low</span></div></div>
+    <div class="def-card"><div class="def-icon">☀️</div><div class="def-name">Vitamin D Deficiency</div><div class="def-badges"><span class="def-badge high">High</span><span class="def-badge mod">Moderate</span><span class="def-badge low">Low</span></div></div>
+    <div class="def-card"><div class="def-icon">⚡</div><div class="def-name">Vitamin B12 Deficiency</div><div class="def-badges"><span class="def-badge high">High</span><span class="def-badge mod">Moderate</span><span class="def-badge low">Low</span></div></div>
+    <div class="def-card"><div class="def-icon">🌿</div><div class="def-name">Folate Deficiency</div><div class="def-badges"><span class="def-badge high">High</span><span class="def-badge mod">Moderate</span><span class="def-badge low">Low</span></div></div>
+    <div class="def-card"><div class="def-icon">🦴</div><div class="def-name">Calcium Deficiency</div><div class="def-badges"><span class="def-badge high">High</span><span class="def-badge mod">Moderate</span><span class="def-badge low">Low</span></div></div>
+    <div class="def-card"><div class="def-icon">💊</div><div class="def-name">Magnesium Deficiency</div><div class="def-badges"><span class="def-badge high">High</span><span class="def-badge mod">Moderate</span><span class="def-badge low">Low</span></div></div>
+    <div class="def-card"><div class="def-icon">🍌</div><div class="def-name">Potassium Deficiency</div><div class="def-badges"><span class="def-badge high">High</span><span class="def-badge mod">Moderate</span><span class="def-badge low">Low</span></div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="nav-logo">
+        <div class="nav-logo-icon">🧬</div>
+        <span class="nav-logo-text">NutriDetect</span>
+      </div>
+      <p>An AI-powered tool for detecting nutrient deficiencies using Natural Language Processing. Built for research purposes.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Quick Links</div>
+      <ul class="footer-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#analyze">Analyze</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Technology</div>
+      <ul class="footer-links">
+        <li><a href="#">Natural Language Processing</a></li>
+        <li><a href="#">Clinical Text Analysis</a></li>
+        <li><a href="#">Multi-label Classification</a></li>
+        <li><a href="#">Severity Estimation</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 Nutrient Deficiency Detection using NLP — Research Project</div>
+</footer>
+
+<script>
+const BACKEND = 'https://nutrient-backend.onrender.com/predict';
+
+// File upload
+const dropZone     = document.getElementById('dropZone');
+const fileInput    = document.getElementById('fileInput');
+const fileSelected = document.getElementById('fileSelected');
+const selectedName = document.getElementById('selectedFileName');
+
+function setFile(file) {
+  if (!file) return;
+  dropZone.classList.add('has-file');
+  fileSelected.classList.add('show');
+  selectedName.textContent = file.name;
+}
+
+fileInput.addEventListener('change', () => setFile(fileInput.files[0]));
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const dt = new DataTransfer(); dt.items.add(file); fileInput.files = dt.files;
+  setFile(file);
+});
+
+// Analyze
+document.getElementById('analyzeBtn').addEventListener('click', async () => {
+  const file = fileInput.files[0];
+  const text = document.getElementById('textInput').value.trim();
+  hideError();
+
+  if (!file && !text) {
+    showError('Please upload a file or enter symptom text before analyzing.');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const fd = new FormData();
+    if (file) fd.append('file', file);
+    if (text) fd.append('text', text);
+
+    const res = await fetch(BACKEND, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(`Server error ${res.status}: ${await res.text()}`);
+
+    renderResults(await res.json());
+  } catch (err) {
+    showError(err.message || 'Could not reach the server. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+});
+
+// Render
+function renderResults(data) {
+  const section = document.getElementById('results-section');
+  const list = document.getElementById('resultsList');
+  list.innerHTML = '';
+
+  let items = [];
+  if (Array.isArray(data)) {
+    items = data.map(i => ({ nutrient: i.nutrient||i.name||i.deficiency||Object.keys(i)[0], label: String(i.label||i.status||i.severity||Object.values(i)[0]||'') }));
+  } else if (typeof data === 'object') {
+    const inner = data.results||data.predictions||data.data;
+    if (Array.isArray(inner)) {
+      items = inner.map(i => ({ nutrient: i.nutrient||i.name||i.deficiency||Object.keys(i)[0], label: String(i.label||i.status||i.severity||Object.values(i)[0]||'') }));
+    } else {
+      items = Object.entries(data).map(([k,v]) => ({ nutrient: k, label: String(v) }));
     }
-  </script>
+  }
 
+  if (!items.length) { showError('No results returned from server.'); return; }
+
+  items.forEach((item, i) => {
+    const lbl = item.label.toLowerCase();
+    const detected = (lbl.includes('predict') && !lbl.includes('not')) || (lbl === 'true') || (lbl === '1') || lbl.includes('high') || lbl.includes('mod') || lbl.includes('low');
+    let rowClass = 'not-detected', badgeClass = '', badgeText = 'Not Detected';
+
+    if (detected) {
+      if (lbl.includes('high'))      { rowClass='detected-high'; badgeClass='sev-high'; badgeText='High'; }
+      else if (lbl.includes('mod'))  { rowClass='detected-mod';  badgeClass='sev-mod';  badgeText='Moderate'; }
+      else if (lbl.includes('low'))  { rowClass='detected-low';  badgeClass='sev-low';  badgeText='Low'; }
+      else                           { rowClass='detected-low';  badgeClass='sev-low';  badgeText='Predicted'; }
+    }
+
+    const row = document.createElement('div');
+    row.className = `result-row ${rowClass}`;
+    row.style.animationDelay = `${i*0.06}s`;
+    row.innerHTML = `<span>• ${esc(item.nutrient)}</span><span class="severity-badge ${badgeClass}">${badgeText}</span>`;
+    list.appendChild(row);
+  });
+
+  section.classList.add('show');
+  section.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// Clear
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.getElementById('results-section').classList.remove('show');
+  document.getElementById('resultsList').innerHTML = '';
+  hideError();
+  fileInput.value = '';
+  dropZone.classList.remove('has-file');
+  fileSelected.classList.remove('show');
+  selectedName.textContent = '';
+  document.getElementById('textInput').value = '';
+});
+
+function setLoading(on) {
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = on;
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btnText').textContent = on ? 'Analyzing…' : '⚡ Analyze File';
+}
+function showError(msg) { document.getElementById('errorMsg').textContent = msg; document.getElementById('errorBox').classList.add('show'); }
+function hideError() { document.getElementById('errorBox').classList.remove('show'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
 </body>
 </html>
