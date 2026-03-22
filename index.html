@@ -1,17 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Nutrient Deficiency Detection</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-nUQ-jEr5.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-B4hOON2K.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<html>
+<head>
+  <title>Nutrient Deficiency Detector</title>
+</head>
+<body>
+
+  <h2>Nutrient Deficiency Detection</h2>
+
+  <input type="text" id="inputText" placeholder="Enter symptoms" style="width:300px;">
+  <button onclick="predict()">Predict</button>
+
+  <h3>Result:</h3>
+  <div id="result"></div>
+
+  <script>
+    async function predict() {
+      const userInput = document.getElementById("inputText").value;
+
+      try {
+        const res = await fetch("https://nutrient-backend.onrender.com/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ text: userInput })
+        });
+
+        const data = await res.json();
+
+        let output = "";
+        for (let key in data) {
+          output += key + " : " + data[key] + "<br>";
+        }
+
+        document.getElementById("result").innerHTML = output;
+
+      } catch (error) {
+        document.getElementById("result").innerHTML = "Error connecting to backend";
+      }
+    }
+  </script>
+
+</body>
 </html>
